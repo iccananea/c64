@@ -1,0 +1,68 @@
+; Scroll text writes 255 chars on a black screen and scrolls it to the left.
+; Igor Cananéa (iccananea@gmail.com) - December 2017.
+;
+; Assemble using DASM. Tested on the VICE Commodore 64 emulator.
+  processor 6502
+  org $1000
+
+  jmp clear
+
+init:
+  ; Initialize variables.
+  lda #$00  ; Set A register to 0. Selects both the color and the char.
+  sta $44   ; Set Memory location $44 to 0. Stores the initial value of A.
+  tax       ; Set X register to value of A (0).
+
+loop:
+ ; First, update the screen color and char.
+  sta $0400,X
+  sta $d800,X
+
+  ; Update A to change both color and char.
+  clc
+  adc #$01
+
+  ; Move the index to the next screen position.
+  inx       
+
+  ; if X != 0, continue
+  cpx #$00
+  bne loop
+
+  ; if X == 0, then increment A and continue.
+  inc $44
+  lda $44
+
+  ; Wait then continue.
+  jmp wait
+continue:
+  jmp loop
+
+; I just copied this code, I don't understand it yet.
+wait:
+w1: bit $d011 
+    bpl w1 
+w2: bit $d012 
+    bmi w2
+    jmp continue
+
+clear:
+  ; First, set the screen and border to black.
+  lda #$00
+  sta $d020
+  sta $d021
+
+  ; Now use the character SPACE to clear the screen.
+  lda #$20
+  ldx #$00
+screen:
+  ; Screen goes from $0400 to $07FF.
+  sta $0400,X
+  sta $0500,X
+  sta $0600,X
+  sta $0700,X
+  dex
+  bne screen
+
+  ; All done, let's start writing stuff.
+  jmp init

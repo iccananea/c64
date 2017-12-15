@@ -1,0 +1,27 @@
+  ; inc16 is a macro used to increment 16 bit numbers.
+  ; ARGS:
+  ;  1 - The base address where the number is stored.
+  MAC inc16
+    inc {1}
+    ldx {1}
+    cpx #$00
+    bne .end
+    inc {1}+1
+.end:
+  ENDM
+
+  ; cmp16 compares two 16 bit numbers.
+  ; ARGS:
+  ;  1 - Base address of first number.
+  ;  2 - Base address of second number.
+  MAC cmp16
+    ; First, compare the MSB of both numbers.
+    lda {1}+1
+    cmp {2}+1
+    bne .end
+
+    ; MSB is equal, compare LSB.
+    lda {1}
+    cmp {2}
+.end:
+  ENDM

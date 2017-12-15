@@ -1,46 +1,22 @@
   processor 6502
   org $1000
 
-  ; inc16bit is a macro used to increment 16 bit numbers.
-  ; ARGS:
-  ;  1 - The base address where the number is stored.
-  MAC inc16bit
-    inc {1}
-    cmp #$00
-    bne .end
-    inc {1},1
-  .end:
-  ENDM
+  INCLUDE "ops16.dasm"
 
-  ; eq16bit compares two 16 bit numbers.
-  ; ARGS:
-  ;  1 - Base address of first number.
-  ;  2 - Base address of second number.
-  MAC cmp16bit
-    ; First, compare the MSB of both numbers.
-    lda {1}+1
-    cmp {2}+1
-    bne .end
-
-    ; MSB is equal, compare LSB.
-    lda {1}
-    cmp {2}
-.end:
-  ENDM
- 
-  ; Store $1000 in memory.
-  lda #$00
+ ; Store $1000 in memory.
+  lda #$FF
   sta $40
-  lda #$10
+  lda #$20
   sta $41
 
   ; Store $2000 in memory.
   lda #$00
   sta $42
-  lda #$20
+  lda #$21
   sta $43
 
-  cmp16bit $40, $42
+  inc16 $40
+  cmp16 $40, $42
   bpl bigger
   jmp smaller
   

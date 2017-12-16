@@ -1,0 +1,64 @@
+  processor 6502
+  org $1000
+
+  INCLUDE "ops16.dasm"
+
+start:
+   ; Put the bitmap base at $2000
+  lda #$08
+  ora $d018
+  sta $d018
+
+  ; Set standard color graphics mode (320x200, 2 colors per 8x8 sprite).
+  lda #$20
+  ora $d011
+  sta $d011
+
+  ; Now let's clear the screen. We will loop across the bitmap and set the
+  ; correct values for clearing it.
+
+  ; First, set base address #$2000 at $40.
+  lda #$00
+  sta $40
+  lda #$20
+  sta $41
+  
+  ; Then set limit address #$3F40 at $42.  
+  lda #$40
+  sta $42
+  lda #$3F
+  sta $43
+
+  ldx #$00
+clear_screen subroutine
+  cmp16 $40, $42
+  beq .end
+  lda #$F0
+  sta ($40,X)
+  inc16 $40
+  jmp clear_screen
+.end:
+
+  ; First, set base address #$0400 at $40.
+  lda #$00
+  sta $40
+  lda #$04
+  sta $41
+  
+  ; Then set limit address #$07E8 at $42.  
+  lda #$E8
+  sta $42
+  lda #$07
+  sta $43
+
+color_screen subroutine
+  cmp16 $40, $42
+  beq .end
+  lda #$03
+  sta ($40,X)
+  inc16 $40
+  jmp color_screen
+.end:
+
+loop:
+  jmp loop

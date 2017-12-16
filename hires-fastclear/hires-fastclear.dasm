@@ -1,10 +1,12 @@
   processor 6502
   org $1000
 
-  INCLUDE "ops16.dasm"
+  INCLUDE "graphics.dasm"
 
-start:
-   ; Put the bitmap base at $2000
+  ; Enable interupts.
+  sei
+
+  ; Put the bitmap base at $2000
   lda #$08
   ora $d018
   sta $d018
@@ -14,51 +16,33 @@ start:
   ora $d011
   sta $d011
 
-  ; Now let's clear the screen. We will loop across the bitmap and set the
-  ; correct values for clearing it.
+  FILL_COLOR_SCREEN #$03
 
-  ; First, set base address #$2000 at $40.
-  lda #$00
-  sta $40
-  lda #$20
-  sta $41
-  
-  ; Then set limit address #$3F40 at $42.  
-  lda #$40
-  sta $42
-  lda #$3F
-  sta $43
 
-  ldx #$00
-clear_screen subroutine
-  cmp16 $40, $42
-  beq .end
-  lda #$F0
-  sta ($40,X)
-  inc16 $40
-  jmp clear_screen
-.end:
+counter = $fa ; a zeropage address to be used as a counter
 
-  ; First, set base address #$0400 at $40.
-  lda #$00
-  sta $40
-  lda #$04
-  sta $41
-  
-  ; Then set limit address #$07E8 at $42.  
-  lda #$E8
-  sta $42
-  lda #$07
-  sta $43
+        lda #$00    ; reset
+        sta counter ; counter
+        sta $40
+        FILL_BIT_SCREEN $40 ; set the bit pattern.
 
-color_screen subroutine
-  cmp16 $40, $42
-  beq .end
-  lda #$03
-  sta ($40,X)
-  inc16 $40
-  jmp color_screen
-.end:
+loop1:  lda #$fb  ; wait for vertical retrace
+loop2:  cmp $d012 ; until it reaches 251th raster line ($fb)
+        bne loop2 ; which is out of the inner screen area
 
-loop:
-  jmp loop
+        inc counter ; increase frame counter
+        lda counter ; check if counter
+        cmp #10     ; reached 10 (5 refreshes/second)
+        bne out     ; if not, pass the color changing routine
+
+        lda #$00    ; reset
+        sta counter ; counter
+
+        inc $40
+        FILL_BIT_SCREEN $40 ; set the bit pattern.
+out:
+        lda $d012 ; make sure we reached
+loop3:  cmp $d012 ; the next raster line so next time we
+        beq loop3 ; should catch the same line next frame
+
+        jmp loop1 ; jump to main loop

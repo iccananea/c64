@@ -1,0 +1,81 @@
+  ; FILL_BIT_SCREEN fills a hires (320x200, 2-color) screen with the specified bit
+  ; pattern.
+  ; ARGS:
+  ;  1 - The bit pattern
+  ; AFFECTS:
+  ;  - A register.
+  ;  - X register.
+  ;  - Status flags.
+  MAC FILL_BIT_SCREEN
+    ; Set the screen bit pattern. We will loop across the bitmap ($2000-$3F3F)
+    ; and set them with the bit pattern.
+    ldx #$00
+    lda {1}
+.clear:
+    sta $2000,X
+    sta $2100,X
+    sta $2200,X
+    sta $2300,X
+    sta $2400,X
+    sta $2500,X
+    sta $2600,X
+    sta $2700,X
+    sta $2800,X
+    sta $2900,X
+    sta $2A00,X
+    sta $2B00,X
+    sta $2C00,X
+    sta $2D00,X
+    sta $2E00,X
+    sta $2F00,X
+    sta $3000,X
+    sta $3100,X
+    sta $3200,X
+    sta $3300,X
+    sta $3400,X
+    sta $3500,X
+    sta $3600,X
+    sta $3700,X
+    sta $3800,X
+    sta $3900,X
+    sta $3A00,X
+    sta $3B00,X
+    sta $3C00,X
+    sta $3D00,X
+    sta $3E00,X
+    inx
+    cpx #$00
+    bne .clear
+.clear_last:
+    sta $3F00,X
+    inx
+    cpx #$40
+    bne .clear_last
+  ENDM
+
+  ; FILL_COLOR_SCREEN fills a hires (320x200, 2-color) screen with the specifie
+  ; color.
+  ; ARGS:
+  ;  1 - The color.
+  ; AFFECTS:
+  ;  - A register.
+  ;  - X register.
+  ;  - Status flags.
+  MAC FILL_COLOR_SCREEN
+    ; Now let's set a color. We will loop through the color ram ($0400-$07E8)
+    ; to set the color.
+    lda {1}
+    ldx #$00
+.color:
+    sta $0400,X
+    sta $0500,X
+    sta $0600,X
+    inx
+    cpx #$00
+    bne .color
+.color_last:
+    sta $0700,X
+    inx
+    cpx #$E9
+    bne .color_last
+  ENDM
